@@ -1,0 +1,647 @@
+import PyQt6.QtWidgets as pq
+from PyQt6.QtGui import QPixmap, QFont
+import sys
+from math import (sin, cos, pi, tan, sqrt)
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+
+
+class MainWindow(pq.QWidget):
+    def __init__(self):
+        super().__init__()
+
+    def Name(self):
+        self.setWindowTitle('Программа для рассчета баллонов')
+
+    def SizeSet(self):
+        self.setFixedSize(1200, 800)
+
+    def GraphBack(self):
+        lable = pq.QLabel(self)
+        img = os.getcwd()
+        pix = QPixmap(img + "\нев дизайн.png")
+        lable.setPixmap(pix)
+
+    def MainUi(self):
+        '''Число семейств армирования'''
+        self.edit = pq.QLineEdit(self)
+        self.edit.setFixedSize(50, 20)
+        self.edit.move(305, 100)
+        self.edit.textEdited.connect(self.text_edited)
+
+        # Толщина стенки, мм
+        self.edit1 = pq.QLineEdit(self)
+        self.edit1.setFixedSize(75, 20)
+        self.edit1.move(680, 100)
+        self.edit1.textEdited.connect(self.text_edited1)
+
+        # Радиус, мм
+        self.edit2 = pq.QLineEdit(self)
+        self.edit2.setFixedSize(75, 20)
+        self.edit2.move(680, 170)
+        self.edit2.textEdited.connect(self.text_edited2)
+
+        # Внутреннее давление, Мпа
+        self.edit3 = pq.QLineEdit(self)
+        self.edit3.setFixedSize(75, 20)
+        self.edit3.move(680, 240)
+        self.edit3.textEdited.connect(self.text_edited3)
+
+        # Модуль упругости вдоль волокон
+        self.edit4 = pq.QLineEdit(self)
+        self.edit4.setFixedSize(75, 20)
+        self.edit4.move(1085, 90)
+        self.edit4.textEdited.connect(self.text_edited4)
+
+        # Модуль упругости поперек волокон
+        self.edit5 = pq.QLineEdit(self)
+        self.edit5.setFixedSize(75, 20)
+        self.edit5.move(1085, 125)
+        self.edit5.textEdited.connect(self.text_edited5)
+
+        # Модуль сдвига
+        self.edit6 = pq.QLineEdit(self)
+        self.edit6.setFixedSize(75, 20)
+        self.edit6.move(1085, 160)
+        self.edit6.textEdited.connect(self.text_edited6)
+
+        # Коэффициент паунсона
+        self.edit7 = pq.QLineEdit(self)
+        self.edit7.setFixedSize(75, 20)
+        self.edit7.move(1085, 195)
+        self.edit7.textEdited.connect(self.text_edited7)
+
+        # 0 градусов, Мпа
+        self.edit8 = pq.QLineEdit(self)
+        self.edit8.setFixedSize(75, 20)
+        self.edit8.move(1085, 260)
+        self.edit8.textEdited.connect(self.text_edited8)
+
+        # 45 градусов, Мпа
+        self.edit9 = pq.QLineEdit(self)
+        self.edit9.setFixedSize(75, 20)
+        self.edit9.move(1085, 295)
+        self.edit9.textEdited.connect(self.text_edited9)
+
+        # 90 градусов, Мпа
+        self.edit10 = pq.QLineEdit(self)
+        self.edit10.setFixedSize(75, 20)
+        self.edit10.move(1085, 330)
+        self.edit10.textEdited.connect(self.text_edited10)
+
+        # пары углов
+        self.edit11 = pq.QLineEdit(self)
+        self.edit11.setFixedSize(200, 20)
+        self.edit11.move(100, 250)
+        self.edit11.textEdited.connect(self.text_edited11)
+
+        # Кнопка рассчета
+        self.button1 = pq.QPushButton(self)
+        self.button1.setText("Рассчет")
+        self.button1.setCheckable(True)
+        self.button1.setFixedSize(100, 30)
+        self.button1.move(100, 320)
+        self.button1.clicked.connect(self.vvod_dannih)
+
+        # Кнопка сброса
+        self.button2 = pq.QPushButton(self)
+        self.button2.setText("Сброс")
+        self.button2.setCheckable(True)
+        self.button2.setFixedSize(100, 30)
+        self.button2.move(210, 320)
+        self.button2.clicked.connect(self.clean)
+
+    def text_edited(self, s):
+        '''Число семейств армирования'''
+        global sl
+        try:
+            sl = int(s)
+        except:
+            pass
+
+    def text_edited1(self, s):
+        '''Толщина стенки'''
+        global h
+        try:
+            h = float(s)
+        except:
+            pass
+
+    def text_edited2(self, s):
+        '''Радиус'''
+        global R
+        try:
+            R = float(s)
+        except:
+            pass
+
+    def text_edited3(self, s):
+        '''Внутреннее давление'''
+        global press
+        try:
+            press = float(s)
+        except:
+            pass
+
+    def text_edited4(self, s):
+        '''Модуль упругости вдоль волокон'''
+        global e01
+        try:
+            e01 = float(s) * 1000
+        except:
+            pass
+
+    def text_edited5(self, s):
+        '''Поперек волокон'''
+        global e02
+        try:
+            e02 = float(s) * 1000
+        except:
+            pass
+
+    def text_edited6(self, s):
+        '''Модуль сдвига'''
+        global g012
+        try:
+            g012 = float(s) * 1000
+        except:
+            pass
+
+    def text_edited7(self, s):
+        '''Пуассон'''
+        global nu012
+        try:
+            nu012 = float(s)
+        except:
+            pass
+
+    def text_edited8(self, s):
+        '''0 градусов'''
+        global sigma0
+        try:
+            sigma0 = float(s)
+        except:
+            pass
+
+    def text_edited9(self, s):
+        '''45 градусов'''
+        global sigma45
+        try:
+            sigma45 = float(s)
+        except:
+            pass
+
+    def text_edited10(self, s):
+        '''90 градусов'''
+        global sigma90
+        try:
+            sigma90 = float(s)
+        except:
+            pass
+
+    def text_edited11(self, s):
+        global spisok_par
+        '''Угол намотки,количество пар углов'''
+
+        spisok_par = s
+
+    def clean(self):
+        try:
+            self.lab1.setText('')
+            self.lab2.setText('')
+            self.lab3.setText('')
+            self.lab4.setText('')
+            self.lab5.setText('')
+            self.lab6.setText('')
+            self.lab7.setText('')
+            self.lab8.setText('')
+            self.lab9.setText('')
+            self.lab10.setText('')
+            self.lab11.setText('')
+            self.lab12.setText('')
+        except:
+            pass
+    def reshenie(self):
+        otveti = {}
+
+        """sigma_sred(h, R, press):"""
+
+        sigma_os = press * R / (2 * h)
+        sigma_okr = press * R / h
+
+        otveti['sigma_os'] = sigma_os
+        otveti['sigma_okr'] = sigma_okr
+
+        """tenz_E_0(e01, e02, g012, nu012, nu021)"""
+        e011 = e01 / (1 - nu012 * nu021)
+        e012 = e01 * nu021 / (1 - nu012 * nu021)
+        e022 = e02 / (1 - nu012 * nu021)
+        e066 = g012
+        E = np.zeros((3, 3))
+        E[0][0] = round(e011 / 1000)
+        E[1][0] = round(e012 / 1000)
+        E[1][1] = round(e022 / 1000)
+        E[0][1] = round(e012 / 1000)
+        E[2][2] = round(e066 / 1000)
+        E = np.round(E, 1)
+
+        otveti['E'] = E
+        otveti['e011'] = e011
+        otveti['e012'] = e012
+        otveti['e022'] = e022
+        otveti['e066'] = e066
+
+        '''tenz_E_det(alpha, sl, e011, e022, e012, e066)'''
+        Ezz = np.zeros(shape=(sl, 2))
+        Ett = np.zeros(shape=(sl, 2))
+        Ezt = np.zeros(shape=(sl, 2))
+
+        for i in range(sl):
+            s = sin(alpha[i] * pi / 180)
+            c = cos(alpha[i] * pi / 180)
+            ezz = e011 * c ** 4 + e022 * s ** 4 + 2 * (e012 + 2 * e066) * s ** 2 * c ** 2
+            Ezz[i][0] = round(alpha[i], 1)
+            Ezz[i][1] = round(ezz, 1)
+            ett = e011 * s ** 4 + e022 * c ** 4 + 2 * (e012 + 2 * e066) * s ** 2 * c ** 2
+            Ett[i][0] = round(alpha[i], 1)
+            Ett[i][1] = round(ett, 1)
+            ezt = (e011 + e022 - 4 * e066) * s ** 2 * c ** 2 + e012 * (s ** 4 + c ** 4)
+            Ezt[i][0] = round(alpha[i], 1)
+            Ezt[i][1] = round(ezt, 1)
+            E_det = np.zeros((2, 2))
+            E_det[0][0] = ezz
+            E_det[1][0] = ezt
+            E_det[1][1] = ett
+            E_det[0][1] = ezt
+
+        otveti['Ezz'] = Ezz
+        otveti['Ett'] = Ett
+        otveti['Ezt'] = Ezt
+
+        """tenz_E_pack(sl, N, n, Ezz, Ett, Ezt)"""
+
+        ezz_pack = 0
+        ett_pack = 0
+        ezt_pack = 0
+        for i in range(sl):
+            ezz_pack = ezz_pack + n[i] * Ezz[i][1]
+            ett_pack = ett_pack + n[i] * Ett[i][1]
+            ezt_pack = ezt_pack + n[i] * Ezt[i][1]
+        ezz_pack = ezz_pack * 2 / N
+        ett_pack = ett_pack * 2 / N
+        ezt_pack = ezt_pack * 2 / N
+        E_pack = np.zeros((2, 2))
+        E_pack[0][0] = round(ezz_pack / 1000)
+        E_pack[1][0] = round(ezt_pack / 1000)
+        E_pack[1][1] = round(ett_pack / 1000)
+        E_pack[0][1] = round(ezt_pack / 1000)
+        E_pack = np.round(E_pack, 1)
+
+        otveti['E_pack'] = E_pack
+        otveti['ezz_pack'] = ezz_pack
+        otveti['ett_pack'] = ett_pack
+        otveti['ezt_pack'] = ezt_pack
+
+        """matrix_compl_pack(ezz_pack, ett_pack, ezt_pack)"""
+
+        delta = ezz_pack * ett_pack - ezt_pack ** 2
+        szz_pack = ett_pack / delta
+        stt_pack = ezz_pack / delta
+        szt_pack = -ezt_pack / delta
+        S_det = np.zeros((2, 2))
+        S_det[0][0] = szz_pack
+        S_det[1][0] = szt_pack
+        S_det[1][1] = stt_pack
+        S_det[0][1] = szt_pack
+        S_det = np.round(S_det, 5)
+
+        otveti['S_det'] = S_det
+        otveti['szz_pack'] = szz_pack
+        otveti['stt_pack'] = stt_pack
+        otveti['szt_pack'] = szt_pack
+
+        """eps_sred(szz_pack, szt_pack, stt_pack, sigma_os, sigma_okr)"""
+
+        eps_os = szz_pack * sigma_os + szt_pack * sigma_okr
+        eps_okr = szt_pack * sigma_os + stt_pack * sigma_okr
+
+        otveti['eps_os'] = round(eps_os, 5)
+        otveti['eps_okr'] = round(eps_okr, 5)
+
+        """sigma_p(sl, alpha, Ezz, Ezt, Ett, eps_os, eps_okr)"""
+
+        sigma_p_os = np.zeros(shape=(sl, 2))
+        sigma_p_okr = np.zeros(shape=(sl, 2))
+        for i in range(sl):
+            sigma_p_os[i][0] = alpha[i]
+            sigma_p_os[i][1] = round(Ezz[i][1] * eps_os + Ezt[i][1] * eps_okr)
+            sigma_p_okr[i][0] = alpha[i]
+            sigma_p_okr[i][1] = round(Ezt[i][1] * eps_os + Ett[i][1] * eps_okr)
+
+        otveti['sigma_p_os'] = sigma_p_os
+        otveti['sigma_p_okr'] = sigma_p_okr
+
+        """pov_pryam(alpha, sl, sigma0, sigma45, sigma90, sigma_p_os, sigma_p_okr)"""
+        K = np.zeros(shape=(sl, 2))
+        K_list = []
+        for i in range(sl):
+            K[i][0] = alpha[i]
+            if alpha[i] != 90:
+                t = tan(alpha[i] * pi / 180)
+                fig, ax = plt.subplots()
+                fig.set_size_inches(18.5, 10.5)
+                x = np.linspace(-1200, 1200)
+                y1 = t ** 2 * x + t * sigma45
+                y2 = t ** 2 * x - t * sigma45
+                y3 = t ** 2 * x
+                X1 = sigma0 * cos(alpha[i] * pi / 180) ** 2
+                Y1 = sigma0 * sin(alpha[i] * pi / 180) ** 2
+                y4 = Y1 - (x - X1) / t ** 2
+                print(sigma_p_okr[i][1])
+                print(sigma_p_os[i][1])
+                y5 = x * sigma_p_okr[i][1] / sigma_p_os[i][1]
+                X2 = (Y1 + X1 / t ** 2 - t * sigma45) / (t ** 2 + t ** -2)
+                Y2 = t ** 2 * X2 + t * sigma45
+                X3 = (Y1 + X1 / t ** 2 + t * sigma45) / (t ** 2 + t ** -2)
+                Y3 = t ** 2 * X3 - t * sigma45
+                y5 = x * sigma_p_okr[i][1] / sigma_p_os[i][1]
+                ax.set_xlim((0, 1500))
+                ax.set_ylim((0, 1500))
+                ax.set_aspect("equal")
+                ax.set_xlabel("Осевые напряжения, МПа", fontsize=20)
+                ax.set_ylabel("Окружные напряжения, МПа", fontsize=20)
+                ax.set_title("Угол " + str(alpha[i]) + " градусов")
+                ax.minorticks_on()
+                # ax.grid(which='both')
+                ax.plot([-2000, 2000], [0, 0], color='black')
+                ax.plot([0, 0], [-8000, 8000], color='black')
+                ax.plot(x, y1, color="blue")
+                ax.plot(x, y2, color="blue")
+                ax.plot(x, y3, color="red", linestyle="--")
+                ax.plot(X1, Y1, marker="o", color="black")
+                ax.plot(x, y4, color="blue")
+                ax.plot(sigma45 * t ** -1, 0, marker="o", color="black")
+                ax.plot(0, sigma45 * t, marker="o", color="black")
+                ax.plot(sigma_p_os[i][1], sigma_p_okr[i][1], marker="o", color="red")
+                ax.plot(x, y5, color="green", linestyle="--")
+                k1 = Y3 / X3
+                k_p = sigma_p_okr[i][1] / sigma_p_os[i][1]
+                k2 = Y2 / X2
+                if k_p < k1:
+                    X_dot = -t * sigma45 / (k_p - t ** 2)
+                    Y_dot = k_p * X_dot
+                    K[i][1] = round(
+                        sigma45 / sigma_p_os[i][1] * (t - sigma_p_okr[i][1] / sigma_p_os[i][1] * t ** -1) ** -1, 3)
+                    K_list.append(K[i][1])
+                elif k_p >= k1 and k_p <= k2:
+                    X_dot = (X1 / t ** 2 + Y1) / (k_p + t ** -2)
+                    Y_dot = k_p * X_dot
+                    K[i][1] = round((sigma0 / sigma_p_okr[i][1]) * ((t ** 4 + 1) / (t ** 2 * (t ** 2 + 1))) * (
+                            1 + sigma_p_os[i][1] / (sigma_p_okr[i][1] * t ** 2)) ** -1, 3)
+                    K_list.append(K[i][1])
+                elif k_p > k2:
+                    X_dot = t * sigma45 / (k_p - t ** 2)
+                    Y_dot = k_p * X_dot
+                    K[i][1] = round(
+                        sigma45 / sigma_p_os[i][1] * (-t + sigma_p_okr[i][1] / sigma_p_os[i][1] * t ** -1) ** -1, 3)
+                    K_list.append(K[i][1])
+                ax.plot(X_dot, Y_dot, marker="o", color="orange")
+            else:
+                t = tan(alpha[i] * pi / 180)
+                fig, ax = plt.subplots()
+                fig.set_size_inches(18.5, 10.5)
+                x = np.linspace(-1200, 1200)
+                ax.set_xlim((0, 1500))
+                ax.set_ylim((0, 1500))
+                ax.set_aspect("equal")
+                ax.set_xlabel("Осевые напряжения, МПа", fontsize=20)
+                ax.set_ylabel("Окружные напряжения, МПа", fontsize=20)
+                ax.set_title("Угол " + str(alpha[i]) + " градусов")
+                ax.minorticks_on()
+                # ax.grid(which='both')
+                ax.plot([-2000, 2000], [0, 0], color='black')
+                ax.plot([0, 0], [-8000, 8000], color='black')
+                X1 = sigma0 * cos(alpha[i] * pi / 180) ** 2
+                Y1 = sigma0 * sin(alpha[i] * pi / 180) ** 2
+                y5 = x * sigma_p_okr[i][1] / sigma_p_os[i][1]
+                ax.plot(x, y5, color="green", linestyle="--")
+                ax.plot(sigma_p_os[i][1], sigma_p_okr[i][1], marker="o", color="red")
+                ax.plot(X1, Y1, marker="o", color="black")
+                ax.plot(sigma90, 0, marker="o", color="black")
+                ax.plot(0, sigma0, marker="o", color="black")
+                ax.plot(sigma90, sigma0, marker="o", color="black")
+                ax.axvline(x=sigma90, color="blue")
+                ax.axhline(y=sigma0, color="blue")
+                X_dot = sigma90
+                Y_dot = sigma90 * sigma_p_okr[i][1] / sigma_p_os[i][1]
+                K[i][1] = round((sqrt((X_dot - 0) ** 2 + (Y_dot - 0) ** 2)) / (
+                    sqrt((sigma_p_os[i][1] - 0) ** 2 + (sigma_p_okr[i][1] - 0) ** 2)), 3)
+                K_list.append(K[i][1])
+            ax.plot(X_dot, Y_dot, marker="o", color="orange")
+            fig.savefig("Угол " + str(alpha[i]) + " градусов" + ".png")
+        plt.show()
+
+        otveti['K'] = K
+        otveti['K_list'] = K_list
+
+        sum_sin = 0
+        sum_cos = 0
+        for i in range(len(alpha)):
+            sum_sin = sum_sin + sin(alpha[i] * pi / 180) ** 2 * n[i] / 2
+            sum_cos = sum_cos + cos(alpha[i] * pi / 180) ** 2 * n[i] / 2
+        print('-----------------------------------------')
+        print('осевые напряжения \n', sigma_os, '\n')
+        print('окружные напряжения \n', sigma_okr, '\n')
+        print('компоненты тензора модулей упругости  \n', E, '\n')
+        print('компоненты тензора модулей упругости пакета', np.round(E_pack, 1), '\n')
+        print('Компоненты матрицы податливостей пакета \n', S_det, '\n')
+        print('Средние осевые деформации \n', round(eps_os, 5), '\n')
+        print('Средние окружные деформации \n', round(eps_okr, 5), '\n')
+        print('осевые напряжения в парах слоев \n', sigma_p_os, '\n')
+        print('Окружные напряжения в парах слоев \n', sigma_p_okr, '\n')
+        print('Коэффициенты запаса \n', K, '\n')
+        print('Критическое давление \n', (min(K_list) * press), '\n')
+        print('sin cos \n', (sum_sin / sum_cos), '\n')
+        print('------------------------------------------')
+
+        """Осевые напряжения"""
+        sigma_os = str(round(sigma_os, 5))
+        self.lab1 = pq.QLabel(self)
+        self.lab1.setText(sigma_os)
+        self.lab1.setFixedSize(90, 40)
+        self.lab1.move(500, 451)
+        self.lab1.setStyleSheet('color:white')
+        self.lab1.setFont(QFont("Sanserif", 14))
+        self.lab1.show()
+
+        """Окружные напряжения"""
+        sigma_okr = str(round(sigma_okr, 5))
+        self.lab2 = pq.QLabel(self)
+        self.lab2.setText(sigma_okr)
+        self.lab2.setFixedSize(90, 40)
+        self.lab2.move(500, 495)
+        self.lab2.setStyleSheet('color:white')
+        self.lab2.setFont(QFont("Sanserif", 14))
+        self.lab2.show()
+
+        """Копоненты тензора модулей упругости"""
+        E = str(E)
+        E = E[1:-1]
+        E = ' ' + E
+        self.lab3 = pq.QLabel(self)
+        self.lab3.setText(E)
+        self.lab3.setFixedSize(110, 60)
+        self.lab3.move(485, 540)
+        self.lab3.setStyleSheet('color:white')
+        self.lab3.setFont(QFont("Sanserif", 14))
+        self.lab3.show()
+
+        """Компоненты тензора модулей упругостей пакета """
+        E_pack_f = str((np.round(E_pack, 1)))
+        E_pack_f = str(E_pack_f)
+        E_pack_f = E_pack_f[1:-1]
+        E_pack_f = ' ' + E_pack_f
+        self.lab4 = pq.QLabel(self)
+        self.lab4.setText(E_pack_f)
+        self.lab4.setFixedSize(90, 40)
+        self.lab4.move(484, 606)
+        self.lab4.setStyleSheet('color:white')
+        self.lab4.setFont(QFont("Sanserif", 14))
+        self.lab4.show()
+
+        """Компоненты матрицы податливостей пакета"""
+        S_det = str(S_det)
+        S_det = str(S_det)
+        S_det = S_det[1:-1]
+        S_det = ' ' + S_det
+        self.lab5 = pq.QLabel(self)
+        self.lab5.setText(S_det)
+        self.lab5.setFixedSize(180, 40)
+        self.lab5.move(425, 659)
+        self.lab5.setStyleSheet('color:white')
+        self.lab5.setFont(QFont("Sanserif", 14))
+        self.lab5.show()
+
+        """Средние осевые деформации"""
+        eps1 = str(np.round(eps_os, 5))
+        self.lab6 = pq.QLabel(self)
+        self.lab6.setText(eps1)
+        self.lab6.setFixedSize(90, 40)
+        self.lab6.move(500, 720)
+        self.lab6.setStyleSheet('color:white')
+        self.lab6.setFont(QFont("Sanserif", 14))
+        self.lab6.show()
+
+        """Осевые напряжения в парах слоев"""
+        sigma_p_os = str(np.round(sigma_p_os, 5))
+        sigma_p_os = str(sigma_p_os)
+        sigma_p_os = sigma_p_os[1:-1]
+        sigma_p_os = ' ' + sigma_p_os
+        self.lab7 = pq.QLabel(self)
+        self.lab7.setText(sigma_p_os)
+        self.lab7.setFixedSize(90, 40)
+        self.lab7.move(1065, 451)
+        self.lab7.setStyleSheet('color:white')
+        self.lab7.setFont(QFont("Sanserif", 14))
+        self.lab7.show()
+
+        """Окружные напряжения в парах слоев"""
+        sigma_p_okr = str(sigma_p_okr)
+        sigma_p_okr = str(sigma_p_okr)
+        sigma_p_okr = sigma_p_okr[1:-1]
+        sigma_p_okr = ' ' + sigma_p_okr
+        self.lab8 = pq.QLabel(self)
+        self.lab8.setText(sigma_p_okr)
+        self.lab8.setFixedSize(90, 40)
+        self.lab8.move(1065, 508)
+        self.lab8.setStyleSheet('color:white')
+        self.lab8.setFont(QFont("Sanserif", 14))
+        self.lab8.show()
+        #
+        """Коэффициенты запаса"""
+        K = str(K)
+        K = str(K)
+        K = K[1:-1]
+        K = ' ' + K
+        self.lab9 = pq.QLabel(self)
+        self.lab9.setText(K)
+        self.lab9.setFixedSize(150, 40)
+        self.lab9.move(1020, 562)
+        self.lab9.setStyleSheet('color:white')
+        self.lab9.setFont(QFont("Sanserif", 14))
+        self.lab9.show()
+        #
+        """Критическое давление"""
+        K_list_f = str((min(K_list) * press))
+        self.lab10 = pq.QLabel(self)
+        self.lab10.setText(K_list_f)
+        self.lab10.setFixedSize(90, 40)
+        self.lab10.move(1060, 618)
+        self.lab10.setStyleSheet('color:white')
+        self.lab10.setFont(QFont("Sanserif", 14))
+        self.lab10.show()
+        #
+        """Sin cos"""
+        sincos = str(sum_sin / sum_cos)
+        self.lab11 = pq.QLabel(self)
+        self.lab11.setText(sincos)
+        self.lab11.setFixedSize(105, 40)
+        self.lab11.move(1050, 670)
+        self.lab11.setStyleSheet('color:white')
+        self.lab11.setFont(QFont("Sanserif", 14))
+        self.lab11.show()
+        #
+        """Средние окружные деформации"""
+        eps_okr_f = str(round(eps_okr, 5))
+        self.lab12 = pq.QLabel(self)
+        self.lab12.setText(eps_okr_f)
+        self.lab12.setFixedSize(90, 40)
+        self.lab12.move(1065, 723)
+        self.lab12.setStyleSheet('color:white')
+        self.lab12.setFont(QFont("Sanserif", 14))
+        self.lab12.show()
+
+    def vvod_dannih(self):
+        try:
+            if sl is None or h is None or R is None or press is None or e01 is None or e02 is None or g012 is None or nu012 is None or sigma0 is None or sigma45 is None or sigma90 is None or spisok_par is None:
+                raise Exception ("EmptyValue")
+            global alpha
+            global n
+            global N
+            global nu021
+            N = 0
+            alpha = []
+            n = []
+            pari = spisok_par.split(' ')
+            for i in pari:
+                q = i.split('/')
+                alpha.append(float(q[0]))
+                n.append(float(q[1]))
+            for i in n:
+                N += i
+            N = N * 2
+            nu021 = g012 * e02 / e01
+
+            self.reshenie()
+
+        except Exception as e:
+            print(e)
+            self.msgBox = pq.QMessageBox()
+            self.msgBox.setWindowTitle('Ошибка')
+            self.msgBox.setText("Проверьте введенные данные.")
+            self.msgBox.exec()
+
+
+def mainApp():
+    app = pq.QApplication(sys.argv)
+    window = MainWindow()
+    window.Name()
+    window.SizeSet()
+    window.GraphBack()
+    window.MainUi()
+    window.show()
+    app.exec()
+
+
+mainApp()
